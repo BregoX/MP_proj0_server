@@ -3,10 +3,10 @@ import { Schema, type, MapSchema } from "@colyseus/schema";
 
 export class Player extends Schema {
     @type("number")
-    x = Math.floor(Math.random() * 400);
+    x = Math.floor(Math.random() * 50) - 25;
 
     @type("number")
-    y = Math.floor(Math.random() * 400);
+    y = Math.floor(Math.random() * 50) - 25;
 }
 
 export class State extends Schema {
@@ -23,13 +23,10 @@ export class State extends Schema {
         this.players.delete(sessionId);
     }
 
-    movePlayer (sessionId: string, movement: any) {
-        if (movement.x) {
-            this.players.get(sessionId).x += movement.x * 10;
-
-        } else if (movement.y) {
-            this.players.get(sessionId).y += movement.y * 10;
-        }
+    movePlayer (sessionId: string, position: any) {
+        this.players.get(sessionId).x = position.x;
+        this.players.get(sessionId).y = position.y;
+        console.log("Player position ", position.x, position.y);
     }
 }
 
