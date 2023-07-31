@@ -1,16 +1,24 @@
-import { Room, Client } from "colyseus";
-import { Schema, type, MapSchema } from "@colyseus/schema";
+import {Room, Client} from "colyseus";
+import {Schema, type, MapSchema} from "@colyseus/schema";
 
 export class Player extends Schema {
     @type("number")
-    x = Math.floor(Math.random() * 50) - 25;
+    pX = Math.floor(Math.random() * 50) - 25;
+    @type("number")
+    pY = 0;
+    @type("number")
+    pZ = Math.floor(Math.random() * 50) - 25;
 
     @type("number")
-    y = Math.floor(Math.random() * 50) - 25;
+    vX = 0;
+    @type("number")
+    vY = 0;
+    @type("number")
+    vZ = 0;
 }
 
 export class State extends Schema {
-    @type({ map: Player })
+    @type({map: Player})
     players = new MapSchema<Player>();
 
     something = "This attribute won't be sent to the client-side";
@@ -23,17 +31,21 @@ export class State extends Schema {
         this.players.delete(sessionId);
     }
 
-    movePlayer (sessionId: string, position: any) {
-        this.players.get(sessionId).x = position.x;
-        this.players.get(sessionId).y = position.y;
-        console.log("Player position ", position.x, position.y);
+    movePlayer(sessionId: string, position: any) {
+        this.players.get(sessionId).pX = position.pX;
+        this.players.get(sessionId).pY = position.pY;
+        this.players.get(sessionId).pZ = position.pZ;
+
+        this.players.get(sessionId).vX = position.vX;
+        this.players.get(sessionId).vY = position.vY;
+        this.players.get(sessionId).vZ = position.vZ;
     }
 }
 
 export class StateHandlerRoom extends Room<State> {
     maxClients = 4;
 
-    onCreate (options) {
+    onCreate(options) {
         console.log("StateHandlerRoom created!", options);
 
         this.setState(new State());
@@ -48,16 +60,16 @@ export class StateHandlerRoom extends Room<State> {
         return true;
     }
 
-    onJoin (client: Client) {
+    onJoin(client: Client) {
         client.send("hello", "world");
         this.state.createPlayer(client.sessionId);
     }
 
-    onLeave (client) {
+    onLeave(client) {
         this.state.removePlayer(client.sessionId);
     }
 
-    onDispose () {
+    onDispose() {
         console.log("Dispose StateHandlerRoom");
     }
 
