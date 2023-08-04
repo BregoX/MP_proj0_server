@@ -18,6 +18,11 @@ export class Player extends Schema {
     vY = 0;
     @type("number")
     vZ = 0;
+
+    @type("number")
+    rX = 0;
+    @type("number")
+    rY = 0;
 }
 
 export class State extends Schema {
@@ -38,13 +43,18 @@ export class State extends Schema {
     }
 
     movePlayer(sessionId: string, position: any) {
-        this.players.get(sessionId).pX = position.pX;
-        this.players.get(sessionId).pY = position.pY;
-        this.players.get(sessionId).pZ = position.pZ;
+        const player = this.players.get(sessionId);
 
-        this.players.get(sessionId).vX = position.vX;
-        this.players.get(sessionId).vY = position.vY;
-        this.players.get(sessionId).vZ = position.vZ;
+        player.pX = position.pX;
+        player.pY = position.pY;
+        player.pZ = position.pZ;
+
+        player.vX = position.vX;
+        player.vY = position.vY;
+        player.vZ = position.vZ;
+
+        player.rX = position.rX;
+        player.rY = position.rY;
     }
 }
 
