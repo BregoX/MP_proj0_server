@@ -32,7 +32,7 @@ export class State extends Schema {
     something = "This attribute won't be sent to the client-side";
 
     createPlayer(sessionId: string, data: any) {
-        const player =  new Player();
+        const player = new Player();
         player.speed = data.speed;
 
         this.players.set(sessionId, player);
@@ -67,8 +67,11 @@ export class StateHandlerRoom extends Room<State> {
         this.setState(new State());
 
         this.onMessage("move", (client, data) => {
-            console.log("StateHandlerRoom received message from", client.sessionId, ":", data);
             this.state.movePlayer(client.sessionId, data);
+        });
+
+        this.onMessage("shoot", (client, data) => {
+            this.broadcast("SHOOT", data, {except: client});
         });
     }
 
@@ -76,7 +79,7 @@ export class StateHandlerRoom extends Room<State> {
         return true;
     }
 
-    onJoin(client: Client, data : any) {
+    onJoin(client: Client, data: any) {
         this.state.createPlayer(client.sessionId, data);
     }
 
