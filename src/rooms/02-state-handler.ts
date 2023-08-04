@@ -3,6 +3,9 @@ import {Schema, type, MapSchema} from "@colyseus/schema";
 
 export class Player extends Schema {
     @type("number")
+    speed = 0;
+
+    @type("number")
     pX = Math.floor(Math.random() * 50) - 25;
     @type("number")
     pY = 0;
@@ -23,8 +26,11 @@ export class State extends Schema {
 
     something = "This attribute won't be sent to the client-side";
 
-    createPlayer(sessionId: string) {
-        this.players.set(sessionId, new Player());
+    createPlayer(sessionId: string, data: any) {
+        const player =  new Player();
+        player.speed = data.speed;
+
+        this.players.set(sessionId, player);
     }
 
     removePlayer(sessionId: string) {
@@ -60,9 +66,8 @@ export class StateHandlerRoom extends Room<State> {
         return true;
     }
 
-    onJoin(client: Client) {
-        client.send("hello", "world");
-        this.state.createPlayer(client.sessionId);
+    onJoin(client: Client, data : any) {
+        this.state.createPlayer(client.sessionId, data);
     }
 
     onLeave(client) {
