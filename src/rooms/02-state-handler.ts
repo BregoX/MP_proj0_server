@@ -3,19 +3,20 @@ import {MapSchema, Schema, type} from "@colyseus/schema";
 
 export class Player extends Schema {
     @type("number")
-
     speed = 0;
     @type("int8")
     mHP = 10;
     @type("int8")
     cHP = 10;
+    @type("uint8")
+    loss = 10;
 
     @type("number")
-    pX = Math.floor(Math.random() * 50) - 25;
+    pX = Math.floor(Math.random() * 46) - 23;
     @type("number")
     pY = 0;
     @type("number")
-    pZ = Math.floor(Math.random() * 50) - 25;
+    pZ = Math.floor(Math.random() * 46) - 23;
 
     @type("number")
     vX = 0;
@@ -71,7 +72,20 @@ export class State extends Schema {
 
     applyDamage(sessionId: string, damage: number) {
         const player = this.players.get(sessionId);
-        player.cHP -= damage > player.cHP ? player.cHP : damage;
+
+        let hp = player.cHP - damage;
+        if (hp > 0) {
+            player.cHP -= damage;
+            return null;
+        }
+
+        player.loss++;
+        player.cHP = player.mHP;
+
+        const pX = Math.floor(Math.random() * 46) - 23;
+        const pZ = Math.floor(Math.random() * 46) - 23;
+
+        return {pX, pZ};
     }
 }
 
@@ -91,7 +105,14 @@ export class StateHandlerRoom extends Room<State> {
             this.broadcast("SHOOT", data, {except: client});
         });
         this.onMessage("damage", (client, data) => {
-            this.state.applyDamage(data.enemySessionId, data.value);
+            const enemySessionId = data.enemySessionId;
+            const newPosition = this.state.applyDamage(enemySessionId, data.value);
+
+            if (newPosition != null) {
+                const enemyClient = this.clients.find(client => client.sessionId == enemySessionId);
+                const message = JSON.stringify(newPosition);
+                enemyClient.send("Restart", message);
+            }
         });
     }
 
