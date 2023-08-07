@@ -1,11 +1,14 @@
-import {Room, Client} from "colyseus";
-import {Schema, type, MapSchema} from "@colyseus/schema";
+import {Client, Room} from "colyseus";
+import {MapSchema, Schema, type} from "@colyseus/schema";
 
 export class Player extends Schema {
     @type("number")
+
     speed = 0;
     @type("int8")
-    hp = 10;
+    mHP = 10;
+    @type("int8")
+    cHP = 10;
 
     @type("number")
     pX = Math.floor(Math.random() * 50) - 25;
@@ -40,7 +43,7 @@ export class State extends Schema {
     createPlayer(sessionId: string, data: any) {
         const player = new Player();
         player.speed = data.speed;
-        player.hp = data.hp;
+        player.mHP = player.cHP = data.mHP;
 
         this.players.set(sessionId, player);
     }
@@ -63,7 +66,12 @@ export class State extends Schema {
         player.rX = info.rX;
         player.rY = info.rY;
 
-        player.sit  = info.sit;
+        player.sit = info.sit;
+    }
+
+    applyDamage(sessionId: string, damage: number) {
+        const player = this.players.get(sessionId);
+        player.cHP -= damage > player.cHP ? player.cHP : damage;
     }
 }
 
@@ -81,6 +89,9 @@ export class StateHandlerRoom extends Room<State> {
 
         this.onMessage("shoot", (client, data) => {
             this.broadcast("SHOOT", data, {except: client});
+        });
+        this.onMessage("damage", (client, data) => {
+            this.state.applyDamage(data.enemySessionId, data.value);
         });
     }
 
