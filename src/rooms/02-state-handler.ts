@@ -9,7 +9,7 @@ export class Player extends Schema {
     @type("int8")
     cHP = 10;
     @type("uint8")
-    loss = 10;
+    loss = 0;
 
     @type("number")
     pX = Math.floor(Math.random() * 46) - 23;
