@@ -4,6 +4,8 @@ import {Schema, type, MapSchema} from "@colyseus/schema";
 export class Player extends Schema {
     @type("number")
     speed = 0;
+    @type("int8")
+    hp = 10;
 
     @type("number")
     pX = Math.floor(Math.random() * 50) - 25;
@@ -38,6 +40,7 @@ export class State extends Schema {
     createPlayer(sessionId: string, data: any) {
         const player = new Player();
         player.speed = data.speed;
+        player.hp = data.hp;
 
         this.players.set(sessionId, player);
     }
